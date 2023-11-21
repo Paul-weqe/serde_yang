@@ -1,8 +1,10 @@
-use serde::{ser, Serialize};
 
+use std::fmt::Display;
+
+use serde::{ser, Serialize};
 use crate::{
     consts::node_name_map,
-    error::{Error, Result}
+    error::{Error, Result}, plain::to_plain_string
 };
 
 
@@ -64,7 +66,21 @@ impl<'a> Serializer {
     fn close_node(&mut self) {
         self.output += "}";
     }
-
+    
+    /* 
+    handle serialization to the type variable in yang models
+    e.g:
+        leaf host-name {
+            type string;                                // THIS IS THE TYPE VARIABLE
+            description "Hostname for this system";
+        }
+    */
+    fn serialize_type(&mut self, node_type: &str) -> Result<()> {
+        self.output += "type ";
+        self.output += node_type;
+        self.output += ";";
+        Ok(())
+    }
 
 }
 
@@ -92,14 +108,7 @@ impl<'a> ser::Serializer for &'a mut Serializer {
     // in-memory data structures may be simplified by using `Ok` to propagate
     // the data structure around.
     type Ok = ();
-
-    // The error type when some error occurs during serialization.
     type Error = Error;
-
-    // Associated types for keeping track of additional state while serializing
-    // compound data structures like sequences and maps. In this case no
-    // additional state is required beyond what is already stored in the
-    // Serializer struct.
     type SerializeSeq = Self;
     type SerializeTuple = Self;
     type SerializeTupleStruct = Self;
@@ -107,13 +116,15 @@ impl<'a> ser::Serializer for &'a mut Serializer {
     type SerializeMap = Self;
     type SerializeStruct = Self;
     type SerializeStructVariant = Self;
+    // type SerializeStructVariant = map::StructSerializer<'a>;
 
     // Here we go with the simple methods. The following 12 methods receive one
     // of the primitive types of the data model and map it to JSON by appending
     // into the output string.
     fn serialize_bool(self, v: bool) -> Result<()> {
-        self.output += if v { "true" } else { "false" };
-        Ok(())
+        // self.output += if v { "true" } else { "false" };
+        // Ok(())
+        unimplemented!()
     }
 
     // JSON does not distinguish between different sizes of integers, so all
@@ -334,11 +345,10 @@ impl<'a> ser::Serializer for &'a mut Serializer {
     fn serialize_struct(
         self,
         name: &'static str,
-        len: usize,
+        _len: usize,
     ) -> Result<Self::SerializeStruct> {
         self.open_node(name)?;
         Ok(self)
-        // self.serialize_map(Some(len))
     }
 
     // Struct variants are represented in JSON as `{ NAME: { K: V, ... } }`.
@@ -460,6 +470,8 @@ impl<'a> ser::SerializeTupleVariant for &'a mut Serializer {
     }
 }
 
+// impl<'a> ser::Serialize
+
 // Some `Serialize` types are not able to hold a key and value in memory at the
 // same time so `SerializeMap` implementations are required to support
 // `serialize_key` and `serialize_value` individually.
@@ -497,7 +509,6 @@ impl<'a> ser::SerializeMap for &'a mut Serializer {
     where
         T: ?Sized + Serialize,
     {
-        self.output += ":";
         value.serialize(&mut **self)
     }
 
@@ -517,12 +528,16 @@ impl<'a> ser::SerializeStruct for &'a mut Serializer {
     where
         T: ?Sized + Serialize,
     {
-        if !self.output.ends_with('{') {
-            self.output += ",";
-        }
-        key.serialize(&mut **self)?;
-        self.output += ":";
-        value.serialize(&mut **self)
+        let value_type = std::any::type_name::<T>().to_string();
+        // let value_str = to_plain_string(value).unwrap();
+        
+        // if key == "type--"
+        // {
+        //     self.serialize_type();
+        //     println!("THIS IS THE TYPE!!!");
+        // }
+
+        Ok(())
     }
 
     fn end(self) -> Result<()> {

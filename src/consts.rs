@@ -12,5 +12,3 @@ pub fn node_name_map<'a>() -> HashMap<&'a str, &'a str>{
         ("container", "container--")
     ])
 }
-
-

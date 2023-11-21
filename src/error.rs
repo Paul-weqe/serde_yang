@@ -32,6 +32,7 @@ pub enum Error {
     ExpectedMapComma,
     ExpectedMapEnd,
     ExpectedEnum,
+    FromUtf8Error,
     TrailingCharacters,
 }
 
