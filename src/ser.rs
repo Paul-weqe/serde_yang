@@ -1,24 +1,44 @@
 use serde::{ser, Serialize};
+
 use crate::error::{Error, Result};
 
 pub struct Serializer {
-    output: String
+    // This string starts empty and JSON is appended as values are serialized.
+    output: String,
 }
 
+// By convention, the public API of a Serde serializer is one or more `to_abc`
+// functions such as `to_string`, `to_bytes`, or `to_writer` depending on what
+// Rust types the serializer is able to produce as output.
+//
+// This basic serializer supports only `to_string`.
 pub fn to_string<T>(value: &T) -> Result<String>
-where 
-    T: Serialize, 
+where
+    T: Serialize,
 {
     let mut serializer = Serializer {
-        output: String::new()
+        output: String::new(),
     };
     value.serialize(&mut serializer)?;
     Ok(serializer.output)
 }
 
 impl<'a> ser::Serializer for &'a mut Serializer {
+    // The output type produced by this `Serializer` during successful
+    // serialization. Most serializers that produce text or binary output should
+    // set `Ok = ()` and serialize into an `io::Write` or buffer contained
+    // within the `Serializer` instance, as happens here. Serializers that build
+    // in-memory data structures may be simplified by using `Ok` to propagate
+    // the data structure around.
     type Ok = ();
+
+    // The error type when some error occurs during serialization.
     type Error = Error;
+
+    // Associated types for keeping track of additional state while serializing
+    // compound data structures like sequences and maps. In this case no
+    // additional state is required beyond what is already stored in the
+    // Serializer struct.
     type SerializeSeq = Self;
     type SerializeTuple = Self;
     type SerializeTupleStruct = Self;
@@ -27,7 +47,64 @@ impl<'a> ser::Serializer for &'a mut Serializer {
     type SerializeStruct = Self;
     type SerializeStructVariant = Self;
 
-        // Serialize a char as a single-character string. Other formats may
+    // Here we go with the simple methods. The following 12 methods receive one
+    // of the primitive types of the data model and map it to JSON by appending
+    // into the output string.
+    fn serialize_bool(self, v: bool) -> Result<()> {
+        self.output += if v { "true" } else { "false" };
+        Ok(())
+    }
+
+    // JSON does not distinguish between different sizes of integers, so all
+    // signed integers will be serialized the same and all unsigned integers
+    // will be serialized the same. Other formats, especially compact binary
+    // formats, may need independent logic for the different sizes.
+    fn serialize_i8(self, v: i8) -> Result<()> {
+        self.serialize_i64(i64::from(v))
+    }
+
+    fn serialize_i16(self, v: i16) -> Result<()> {
+        self.serialize_i64(i64::from(v))
+    }
+
+    fn serialize_i32(self, v: i32) -> Result<()> {
+        self.serialize_i64(i64::from(v))
+    }
+
+    // Not particularly efficient but this is example code anyway. A more
+    // performant approach would be to use the `itoa` crate.
+    fn serialize_i64(self, v: i64) -> Result<()> {
+        self.output += &v.to_string();
+        Ok(())
+    }
+
+    fn serialize_u8(self, v: u8) -> Result<()> {
+        self.serialize_u64(u64::from(v))
+    }
+
+    fn serialize_u16(self, v: u16) -> Result<()> {
+        self.serialize_u64(u64::from(v))
+    }
+
+    fn serialize_u32(self, v: u32) -> Result<()> {
+        self.serialize_u64(u64::from(v))
+    }
+
+    fn serialize_u64(self, v: u64) -> Result<()> {
+        self.output += &v.to_string();
+        Ok(())
+    }
+
+    fn serialize_f32(self, v: f32) -> Result<()> {
+        self.serialize_f64(f64::from(v))
+    }
+
+    fn serialize_f64(self, v: f64) -> Result<()> {
+        self.output += &v.to_string();
+        Ok(())
+    }
+
+    // Serialize a char as a single-character string. Other formats may
     // represent this differently.
     fn serialize_char(self, v: char) -> Result<()> {
         self.serialize_str(&v.to_string())
@@ -215,61 +292,6 @@ impl<'a> ser::Serializer for &'a mut Serializer {
         self.output += ":{";
         Ok(self)
     }
-
-    
-
-
-    fn serialize_bool(self, v: bool) -> std::prelude::v1::Result<Self::Ok, Self::Error> {
-        self.output += if v { "true" } else {"false"};
-        Ok(())
-    }   
-
-    // handle the numbers
-    fn serialize_i8(self, v: i8) -> Result<()> {
-        self.serialize_i64(i64::from(v))
-    }
-
-    fn serialize_i16(self, v: i16) -> Result<()> {
-        self.serialize_i64(i64::from(v))
-    }
-
-    fn serialize_i32(self, v: i32) -> Result<()> {
-        self.serialize_i64(i64::from(v))
-    }
-
-    // Not particularly efficient but this is example code anyway. A more
-    // performant approach would be to use the `itoa` crate.
-    fn serialize_i64(self, v: i64) -> Result<()> {
-        self.output += &v.to_string();
-        Ok(())
-    }
-
-    fn serialize_u8(self, v: u8) -> Result<()> {
-        self.serialize_u64(u64::from(v))
-    }
-
-    fn serialize_u16(self, v: u16) -> Result<()> {
-        self.serialize_u64(u64::from(v))
-    }
-
-    fn serialize_u32(self, v: u32) -> Result<()> {
-        self.serialize_u64(u64::from(v))
-    }
-
-    fn serialize_u64(self, v: u64) -> Result<()> {
-        self.output += &v.to_string();
-        Ok(())
-    }
-
-    fn serialize_f32(self, v: f32) -> Result<()> {
-        self.serialize_f64(f64::from(v))
-    }
-
-    fn serialize_f64(self, v: f64) -> Result<()> {
-        self.output += &v.to_string();
-        Ok(())
-    }
-
 }
 
 // The following 7 impls deal with the serialization of compound types like
@@ -467,4 +489,24 @@ impl<'a> ser::SerializeStructVariant for &'a mut Serializer {
         self.output += "}}";
         Ok(())
     }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[test]
+fn test_struct() {
+    #[derive(Serialize, Debug)]
+    struct Test {
+        int: u32,
+        seq: Vec<&'static str>,
+    }
+
+    let test = Test {
+        int: 1,
+        seq: vec!["a", "b"],
+    };
+    to_string(&test).unwrap();
+    
+    let expected = r#"{"int":1,"seq":["a","b"]}"#;
+    assert_eq!(to_string(&test).unwrap(), expected);
 }
