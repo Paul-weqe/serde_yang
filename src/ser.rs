@@ -1,10 +1,71 @@
 use serde::{ser, Serialize};
 
-use crate::error::{Error, Result};
+use crate::{
+    consts::node_name_map,
+    error::{Error, Result}
+};
+
 
 pub struct Serializer {
     // This string starts empty and JSON is appended as values are serialized.
-    output: String,
+    output: String
+}
+
+impl<'a> Serializer {
+
+    fn open_node(&mut self, serd_name: &str) -> Result<()>{
+        let serd_name_str = String::from(serd_name);
+
+        // check for the 'leaf-node--{nodename}'
+        if serd_name_str.starts_with(node_name_map()["leaf"])
+        {
+            self.open_leaf(serd_name)?;
+        } 
+
+        // checks for the 'leaf-list-node--{nodename}'
+        else if serd_name_str.starts_with(node_name_map()["leaf-list"]) 
+        {
+            self.open_leaf_list(serd_name)?;
+        }
+
+        else if serd_name_str.starts_with(node_name_map()["container"])
+        {
+            self.open_container(serd_name)?;
+        }
+        
+        Ok(())
+
+    } 
+
+    fn open_leaf(&mut self, serd_name: &str) -> Result<()>{
+        let node_name = &serd_name[node_name_map()["leaf"].len()..];
+        self.output += "leaf ";
+        self.output += node_name;
+        self.output += "{";
+        Ok(())
+    }
+
+    fn open_leaf_list(&mut self, serd_name: &str) -> Result<()> {
+        let node_name = &serd_name[node_name_map()["leaf-list"].len()..];
+        self.output += "leaf-list ";
+        self.output += node_name;
+        self.output += "{";
+        Ok(())
+    }
+
+    fn open_container(&mut self, serd_name: &str) -> Result<()> {
+        let node_name = &serd_name[node_name_map()["container"].len()..];
+        self.output += "container ";
+        self.output += node_name;
+        self.output += "{";
+        Ok(())
+    }
+
+    fn close_node(&mut self) {
+        self.output += "}";
+    }
+
+
 }
 
 // By convention, the public API of a Serde serializer is one or more `to_abc`
@@ -272,10 +333,12 @@ impl<'a> ser::Serializer for &'a mut Serializer {
     // looking at the serialized data.
     fn serialize_struct(
         self,
-        _name: &'static str,
+        name: &'static str,
         len: usize,
     ) -> Result<Self::SerializeStruct> {
-        self.serialize_map(Some(len))
+        self.open_node(name)?;
+        Ok(self)
+        // self.serialize_map(Some(len))
     }
 
     // Struct variants are represented in JSON as `{ NAME: { K: V, ... } }`.
@@ -320,7 +383,7 @@ impl<'a> ser::SerializeSeq for &'a mut Serializer {
 
     // Close the sequence.
     fn end(self) -> Result<()> {
-        self.output += "]";
+        self.output += " } ";
         Ok(())
     }
 }
@@ -362,7 +425,8 @@ impl<'a> ser::SerializeTupleStruct for &'a mut Serializer {
     }
 
     fn end(self) -> Result<()> {
-        self.output += "]";
+        self.close_node();
+        // self.output += "\n}\n";
         Ok(())
     }
 }
@@ -491,22 +555,3 @@ impl<'a> ser::SerializeStructVariant for &'a mut Serializer {
     }
 }
 
-////////////////////////////////////////////////////////////////////////////////
-
-#[test]
-fn test_struct() {
-    #[derive(Serialize, Debug)]
-    struct Test {
-        int: u32,
-        seq: Vec<&'static str>,
-    }
-
-    let test = Test {
-        int: 1,
-        seq: vec!["a", "b"],
-    };
-    to_string(&test).unwrap();
-
-    let expected = r#"{"int":1,"seq":["a","b"]}"#;
-    assert_eq!(to_string(&test).unwrap(), expected);
-}
