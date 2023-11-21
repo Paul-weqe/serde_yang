@@ -506,7 +506,7 @@ fn test_struct() {
         seq: vec!["a", "b"],
     };
     to_string(&test).unwrap();
-    
+
     let expected = r#"{"int":1,"seq":["a","b"]}"#;
     assert_eq!(to_string(&test).unwrap(), expected);
 }
