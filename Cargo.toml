@@ -6,6 +6,7 @@ repository = "https://github.com/Paul-weqe/yang"
 name = "serde_yang"
 version = "0.1.0"
 edition = "2021"
+keywords = ["yang", "netconf", "parser", "serde", "serde-yang"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
