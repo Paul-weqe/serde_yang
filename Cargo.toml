@@ -3,7 +3,7 @@ authors = ["Paul-weqe <paul1tw1@outlook.com>"]
 description = "yang based serializer(so far) for Serde"
 license = "MIT"
 repository = "https://github.com/Paul-weqe/yang"
-name = "serde-yang"
+name = "serde_yang"
 version = "0.1.0"
 edition = "2021"
 

@@ -1,4 +1,4 @@
-use yang::ser::serializer::to_string;
+use serde_yang::ser::serializer::to_string;
 use serde::Serialize;
 
 fn debug(msg: &str) {

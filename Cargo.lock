@@ -30,13 +30,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "serde-yang"
-version = "0.1.0"
-dependencies = [
- "serde",
-]
-
-[[package]]
 name = "serde_derive"
 version = "1.0.192"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -45,6 +38,13 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
+]
+
+[[package]]
+name = "serde_yang"
+version = "0.1.0"
+dependencies = [
+ "serde",
 ]
 
 [[package]]
