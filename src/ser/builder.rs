@@ -33,15 +33,7 @@ pub (crate) mod leaf_list_node_builder {
         result += node_name;
         result += "{";
         result
-    } 
-    
-    pub (crate) fn description(desc: &str) -> String {
-        let mut result = String::from("");
-        result += "description \"";
-        result += desc;
-        result += "\";";
-        result
-    }
+    }    
 }
 
 pub (crate) mod container_node_builder {
