@@ -1,10 +1,17 @@
 
-use std::fmt::Display;
-
 use serde::{ser, Serialize};
 use crate::{
-    consts::node_name_map,
-    error::{Error, Result}, plain::to_plain_string
+    error::{Error, Result},
+    builder::{
+        leaf_node_builder, 
+        leaf_list_node_builder, 
+        container_node_builder
+    },
+    types::{
+        base::{NodeType, node_serde_mapping}, 
+        self
+    },
+    plain::to_plain_string
 };
 
 
@@ -16,72 +23,47 @@ pub struct Serializer {
 impl<'a> Serializer {
 
     fn open_node(&mut self, serd_name: &str) -> Result<()>{
+
         let serd_name_str = String::from(serd_name);
 
-        // check for the 'leaf-node--{nodename}'
-        if serd_name_str.starts_with(node_name_map()["leaf"])
+        // check for the 'leaf--{nodename}'
+        // and add "leaf nodename{" to output 
+        if serd_name_str.starts_with( node_serde_mapping()[&NodeType::LeafNode] )
         {
-            self.open_leaf(serd_name)?;
+            let value = node_serde_mapping()[&NodeType::LeafNode];
+            self.output += leaf_node_builder::open_node(
+                &serd_name[value.len()..]
+            ).as_str();
         } 
 
-        // checks for the 'leaf-list-node--{nodename}'
-        else if serd_name_str.starts_with(node_name_map()["leaf-list"]) 
+        // checks for the 'leaf-list--{nodename}'
+        // if it is present, we add "leaf-list nodename{" to output
+        else if serd_name_str.starts_with( node_serde_mapping()[&NodeType::LeafListNode] ) 
         {
-            self.open_leaf_list(serd_name)?;
+            let value = node_serde_mapping()[&NodeType::LeafListNode];
+            self.output += leaf_list_node_builder::open_node(
+                &serd_name[value.len()..]
+            ).as_str();
         }
 
-        else if serd_name_str.starts_with(node_name_map()["container"])
+        // checks for the container--{nodename}
+        // if present, we add the "container nodename{" to output
+        else if serd_name_str.starts_with( node_serde_mapping()[&NodeType::ContainerNode] )
         {
-            self.open_container(serd_name)?;
+            let value = node_serde_mapping()[&NodeType::ContainerNode];
+            self.output += container_node_builder::open_node(
+                &serd_name[value.len()..]
+            ).as_str();
         }
-        
+
         Ok(())
 
     } 
-
-    fn open_leaf(&mut self, serd_name: &str) -> Result<()>{
-        let node_name = &serd_name[node_name_map()["leaf"].len()..];
-        self.output += "leaf ";
-        self.output += node_name;
-        self.output += "{";
-        Ok(())
-    }
-
-    fn open_leaf_list(&mut self, serd_name: &str) -> Result<()> {
-        let node_name = &serd_name[node_name_map()["leaf-list"].len()..];
-        self.output += "leaf-list ";
-        self.output += node_name;
-        self.output += "{";
-        Ok(())
-    }
-
-    fn open_container(&mut self, serd_name: &str) -> Result<()> {
-        let node_name = &serd_name[node_name_map()["container"].len()..];
-        self.output += "container ";
-        self.output += node_name;
-        self.output += "{";
-        Ok(())
-    }
 
     fn close_node(&mut self) {
         self.output += "}";
     }
     
-    /* 
-    handle serialization to the type variable in yang models
-    e.g:
-        leaf host-name {
-            type string;                                // THIS IS THE TYPE VARIABLE
-            description "Hostname for this system";
-        }
-    */
-    fn serialize_type(&mut self, node_type: &str) -> Result<()> {
-        self.output += "type ";
-        self.output += node_type;
-        self.output += ";";
-        Ok(())
-    }
-
 }
 
 // By convention, the public API of a Serde serializer is one or more `to_abc`
@@ -436,7 +418,6 @@ impl<'a> ser::SerializeTupleStruct for &'a mut Serializer {
 
     fn end(self) -> Result<()> {
         self.close_node();
-        // self.output += "\n}\n";
         Ok(())
     }
 }
@@ -528,22 +509,41 @@ impl<'a> ser::SerializeStruct for &'a mut Serializer {
     where
         T: ?Sized + Serialize,
     {
-        let value_type = std::any::type_name::<T>().to_string();
-        // let value_str = to_plain_string(value).unwrap();
-        
-        // if key == "type--"
-        // {
-        //     self.serialize_type();
-        //     println!("THIS IS THE TYPE!!!");
-        // }
+
+        let value_type = std::any::type_name::<T>();
+        // println!("VALUE TYPE: {}", value_type);
+
+        if value_type == "alloc::string::String" {
+            let v = to_plain_string(value).unwrap(); 
+            
+
+            if String::from(key).as_str() == "type--" {
+                
+                let valid_types = types::base::built_in_type_mapping().into_values().collect::<Vec<&str>>();
+                // check if is valid type
+                if valid_types.iter().any(|&i| i == v.as_str()) {
+                    self.output += leaf_node_builder::add_type( v.as_str() ).as_str();
+                } else {
+                    panic!("INVALID YANG TYPE: {}", v.as_str());
+                }
+
+            }
+
+            else if String::from(key).as_str() == "description--" {
+                self.output += leaf_node_builder::description(v.as_str()).as_str();
+            } 
+        } else {
+            value.serialize(&mut **self)?;
+        }
 
         Ok(())
     }
 
     fn end(self) -> Result<()> {
-        self.output += "}";
+        self.output += "}\n";
         Ok(())
     }
+
 }
 
 // Similar to `SerializeTupleVariant`, here the `end` method is responsible for
@@ -569,4 +569,3 @@ impl<'a> ser::SerializeStructVariant for &'a mut Serializer {
         Ok(())
     }
 }
-

@@ -2,4 +2,5 @@ pub mod ser;
 mod error;
 mod consts;
 mod plain;
-mod types;
+pub mod types;
+mod builder;

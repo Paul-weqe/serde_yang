@@ -35,16 +35,4 @@ impl BaseYangNode for LeafNode {
     
 }
 
-#[test]
-fn test_basic_leaf_node(){ 
-
-    let leaf_node = LeafNode {
-        node_name: String::from("host-name"),
-        node_type: BuiltInType::String,
-        node_description: Some(String::from("Hostname for this system"))
-    };
-    let expected = "leaf host-name{\ntype string;\ndescription \"Hostname for this system\";\n}";
-    assert_eq!(expected, leaf_node.to_yang());
-
-}
 

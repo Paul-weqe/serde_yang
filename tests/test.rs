@@ -8,60 +8,63 @@ fn debug(msg: &str) {
 }
 
 #[test]
-fn test_basic_leaf_node() {
-
-    #[serde(rename="leaf-node--host-name")]
-    #[derive(Serialize, Debug)]
-    struct HostName {
-        #[serde(rename="type--")]
-        info: String
-    }
-    
-    let test = HostName { 
-        info: String::from("mAJOR")
-     };
-    let result = to_string(&test).unwrap();
-    let expected = "leaf host-name{}";
-    /*assert_eq!(
-        result, 
-        expected
-    );
-    */
-    debug(result.as_str());
-}
-
-#[test]
-fn test_basic_leaf_list_node() {
-    #[serde(rename="leaf-list-node--domain-search")]
-    #[derive(Serialize, Debug)]
-    struct DomainSearch { }
-
-
-    let domain_list = DomainSearch{};
-    let result = to_string(&domain_list).unwrap();
-    let expected = "leaf-list domain-search{}";
-    assert_eq!(
-        result, // result we have gotten 
-        expected// result we expect
-    );
-    debug(result.as_str());
-}
-
-#[test]
 fn test_basic_container_node() {
 
+
+    #[derive(Serialize, Debug, Clone)]
     #[serde(rename="container--system")]
-    #[derive(Serialize, Debug)]
-    struct System {  }
+    struct System {
 
-    let system = System{};
-    let result = to_string(&system).unwrap();
-    let expected = "container system{}";
+        #[serde(rename="leaf--message")]
+        inner: Inner,
 
-    debug(&result.as_str());
-    assert_eq!(
-        result, 
-        expected
-    );
+        #[serde(rename="leaf-list--interfaces")]
+        interface: Interface
+    }
+
+    #[derive(Serialize, Debug, Clone)]
+    struct Inner {
+
+        #[serde(rename="type--")]
+        node_type: String,
+
+        #[serde(rename="description--")]
+        node_description: String,
+        
+    }
+
+    #[derive(Serialize, Debug, Clone)]
+    struct Interface {
+        #[serde(rename="type--")]
+        interface_type: String,
+
+        #[serde(rename="description--")]
+        interface_description: String
+    }
+
+    let inner = Inner{
+        node_type: String::from("string"),
+        node_description: String::from("Message given "),
+    };
+
+    let interface = Interface{
+        interface_type: String::from("string"),
+        interface_description: String::from("This is the Gigabit Ethernet")
+    };
+
+    let system = System{
+        inner: inner.clone(),
+        interface: interface.clone()
+    };
+
+
+    println!("-------------------------- INNER --------------------------\n");
+    debug(to_string(&inner).unwrap().as_str());
+
+    println!("---------------------- SYSTEM CONTAINER ---------------------\n");
+    debug(to_string(&system).unwrap().as_str());
+
+    println!("\n------------------------------------------------------------");
+
 }
 

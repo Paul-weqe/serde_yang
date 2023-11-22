@@ -25,7 +25,8 @@ pub enum BuiltInType {
 }
 
 #[derive(Debug, PartialEq, Eq, Hash)]
-pub enum NodeType {
+pub enum NodeType 
+{
     LeafNode,
     LeafListNode,
     ContainerNode,
@@ -57,6 +58,7 @@ pub fn built_in_type_mapping<'a>() -> HashMap<BuiltInType, &'a str>
         (BuiltInType::Union, "union")
     ])
 }
+ 
 
 pub fn node_type_mapping<'a>() -> HashMap<NodeType, &'a str>
 {
@@ -69,7 +71,23 @@ pub fn node_type_mapping<'a>() -> HashMap<NodeType, &'a str>
     ])
 }
 
-pub trait BaseYangNode {
+pub fn node_serde_mapping<'a>() -> HashMap<NodeType, &'a str>
+{
+    HashMap::from([
+        (NodeType::LeafNode, "leaf--"),
+        (NodeType::LeafListNode, "leaf-list--"),
+        (NodeType::ContainerNode, "container--"),
+        (NodeType::ModuleNode, "module--"),
+        (NodeType::ListNode, "list--")
+    ])
+}
+
+pub trait BaseYangNode 
+{
     fn to_yang(&self) -> String;
+}
+
+pub fn get_built_in_type_str<'a>(built_in: BuiltInType) -> &'a str{
+    built_in_type_mapping()[&built_in]
 }
 

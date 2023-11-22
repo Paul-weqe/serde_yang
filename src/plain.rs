@@ -1,6 +1,7 @@
 use std::io::Write;
-use crate::error::{Error, Result};
+
 use serde::ser::{Impossible, Serialize};
+use crate::error::{Error, Result};
 
 pub fn to_plain_string<T>(value: &T) -> Result<String>
 where
@@ -19,16 +20,14 @@ struct PlainStringSerializer<W: Write> {
 
 impl<W: Write> PlainStringSerializer<W> {
     fn new(writer: W) -> Self {
-        PlainStringSerializer { writer: writer }
+        PlainStringSerializer { writer }
     }
 
     fn characters(&mut self, s: &str) -> Result<()> {
-        let _ = write!(self.writer, "{}", s);
-        Ok(())   
+        write!(self.writer, "{}", s).unwrap();
+        Ok(())
     }
-
 }
-
 
 impl<'ser, W: 'ser + Write> serde::ser::Serializer for &'ser mut PlainStringSerializer<W> {
     type Ok = ();
