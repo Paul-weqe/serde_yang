@@ -31,7 +31,7 @@ pub (crate) mod leaf_list_node_builder {
         let mut result = String::from("");
         result += "leaf-list ";
         result += node_name;
-        result += "{";
+        result += "{\n";
         result
     }    
 }

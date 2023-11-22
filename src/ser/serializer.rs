@@ -50,6 +50,7 @@ impl<'a> Serializer {
             ).as_str();
         }
 
+
         // checks for the container--{nodename}
         // if present, we add the "container nodename{" to output
         else if serd_name_str.starts_with( node_serde_mapping()[&NodeType::ContainerNode] )
@@ -59,6 +60,7 @@ impl<'a> Serializer {
                 &serd_name[value.len()..]
             ).as_str();
         }
+
 
         Ok(())
 
