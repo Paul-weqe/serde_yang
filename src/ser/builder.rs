@@ -35,10 +35,6 @@ pub (crate) mod leaf_list_node_builder {
         result
     } 
     
-    // pub (crate) fn close_node() -> String {
-    //     String::from("}")
-    // }
-    
     pub (crate) fn description(desc: &str) -> String {
         let mut result = String::from("");
         result += "description \"";

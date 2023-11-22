@@ -1,4 +1,4 @@
-use yang::ser::to_string;
+use yang::ser::serializer::to_string;
 use serde::Serialize;
 
 fn debug(msg: &str) {
@@ -14,15 +14,12 @@ fn test_basic_container_node() {
     #[derive(Serialize, Debug, Clone)]
     #[serde(rename="container--system")]
     struct System {
-
-        #[serde(rename="leaf--message")]
         inner: Inner,
-
-        #[serde(rename="leaf-list--interfaces")]
         interface: Interface
     }
 
     #[derive(Serialize, Debug, Clone)]
+    #[serde(rename="leaf--message")]
     struct Inner {
 
         #[serde(rename="type--")]
@@ -34,6 +31,7 @@ fn test_basic_container_node() {
     }
 
     #[derive(Serialize, Debug, Clone)]
+    #[serde(rename="leaf-list--interfaces")]
     struct Interface {
         #[serde(rename="type--")]
         interface_type: String,
@@ -63,7 +61,7 @@ fn test_basic_container_node() {
 
     println!("---------------------- SYSTEM CONTAINER ---------------------\n");
     debug(to_string(&system).unwrap().as_str());
-
+    
     println!("\n------------------------------------------------------------");
 
 }

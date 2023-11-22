@@ -1,16 +1,21 @@
-use serde::{ser::{self, Impossible}, Serialize};
-use crate::{
-    error::{Error, Result},
+
+use serde::{
+    ser::{self, Impossible}, 
+    Serialize
+};
+use crate::error::{Error, Result};
+use super::{
+    plain::to_plain_string,
+    types::{
+        self,
+        NodeType, 
+        node_serde_mapping
+    },
     builder::{
         leaf_node_builder, 
         leaf_list_node_builder, 
         container_node_builder
     },
-    types::{
-        base::{NodeType, node_serde_mapping}, 
-        self
-    },
-    plain::to_plain_string
 };
 
 
@@ -22,9 +27,9 @@ pub struct Serializer {
 impl<'a> Serializer {
 
     fn open_node(&mut self, serd_name: &str) -> Result<()>{
-
+        
         let serd_name_str = String::from(serd_name);
-
+        
         // check for the 'leaf--{nodename}'
         // and add "leaf nodename{" to output 
         if serd_name_str.starts_with( node_serde_mapping()[&NodeType::LeafNode] )
@@ -319,7 +324,7 @@ impl<'a> ser::SerializeStruct for &'a mut Serializer {
 
             if String::from(key).as_str() == "type--" {
                 
-                let valid_types = types::base::built_in_type_mapping().into_values().collect::<Vec<&str>>();
+                let valid_types = types::built_in_type_mapping().into_values().collect::<Vec<&str>>();
                 // check if is valid type
                 if valid_types.iter().any(|&i| i == v.as_str()) {
                     self.output += leaf_node_builder::add_type( v.as_str() ).as_str();

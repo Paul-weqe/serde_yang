@@ -82,11 +82,6 @@ pub fn node_serde_mapping<'a>() -> HashMap<NodeType, &'a str>
     ])
 }
 
-pub trait BaseYangNode 
-{
-    fn to_yang(&self) -> String;
-}
-
 pub fn get_built_in_type_str<'a>(built_in: BuiltInType) -> &'a str{
     built_in_type_mapping()[&built_in]
 }
