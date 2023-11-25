@@ -8,8 +8,8 @@ use super::{
     plain::to_plain_string,
     types::{
         self,
-        NodeType, 
-        node_serde_mapping
+        node, 
+        built_in
     },
     builder::{
         leaf_node_builder, 
@@ -32,9 +32,9 @@ impl<'a> Serializer {
         
         // check for the 'leaf--{nodename}'
         // and add "leaf nodename{" to output 
-        if serd_name_str.starts_with( node_serde_mapping()[&NodeType::LeafNode] )
+        if serd_name_str.starts_with( node::serde_mapping()[&node::Type::LeafNode] )
         {
-            let value = node_serde_mapping()[&NodeType::LeafNode];
+            let value = node::serde_mapping()[&node::Type::LeafNode];
             self.output += leaf_node_builder::open_node(
                 &serd_name[value.len()..]
             ).as_str();
@@ -42,9 +42,9 @@ impl<'a> Serializer {
 
         // checks for the 'leaf-list--{nodename}'
         // if it is present, we add "leaf-list nodename{" to output
-        else if serd_name_str.starts_with( node_serde_mapping()[&NodeType::LeafListNode] ) 
+        else if serd_name_str.starts_with( node::serde_mapping()[&node::Type::LeafListNode] ) 
         {
-            let value = node_serde_mapping()[&NodeType::LeafListNode];
+            let value = node::serde_mapping()[&node::Type::LeafListNode];
             self.output += leaf_list_node_builder::open_node(
                 &serd_name[value.len()..]
             ).as_str();
@@ -53,9 +53,9 @@ impl<'a> Serializer {
 
         // checks for the container--{nodename}
         // if present, we add the "container nodename{" to output
-        else if serd_name_str.starts_with( node_serde_mapping()[&NodeType::ContainerNode] )
+        else if serd_name_str.starts_with( node::serde_mapping()[&node::Type::ContainerNode] )
         {
-            let value = node_serde_mapping()[&NodeType::ContainerNode];
+            let value = node::serde_mapping()[&node::Type::ContainerNode];
             self.output += container_node_builder::open_node(
                 &serd_name[value.len()..]
             ).as_str();
@@ -326,7 +326,7 @@ impl<'a> ser::SerializeStruct for &'a mut Serializer {
 
             if String::from(key).as_str() == "type--" {
                 
-                let valid_types = types::built_in_type_mapping().into_values().collect::<Vec<&str>>();
+                let valid_types = types::built_in::type_mapping().into_values().collect::<Vec<&str>>();
                 // check if is valid type
                 if valid_types.iter().any(|&i| i == v.as_str()) {
                     self.output += leaf_node_builder::add_type( v.as_str() ).as_str();

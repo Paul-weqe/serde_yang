@@ -4,9 +4,7 @@
 
 # Serde YANG
 
-**Serde is a rust library used for <u>ser</u>ialization and <u>de</u>serialization. serde YANG is used for serialization/deserialization of the YANG modelling language.**
----
-
+Serde is a rust library used for <u>ser</u>ialization and <u>de</u>serialization. serde YANG is used for serialization/deserialization of the YANG modelling language.
 
 ```toml
 [dependencies]

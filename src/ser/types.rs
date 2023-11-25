@@ -1,88 +1,103 @@
-use std::collections::HashMap;
+/// 
+/// 
+/// 
+pub mod built_in {
+    use std::collections::HashMap;
 
+    /// These are the default built in types that are supported by YANG modelling 
+    /// language. When one creates a leaf or a leaf-list, they must give the type 
+    /// of the variable(s) that will be held there, this is a list of the allowed variables
+    #[derive(Debug, PartialEq, Eq, Hash)]
+    pub enum Type {
+        Binary,             // Any binary data
+        Bits,               // A set of bits or flags
+        Boolean,            // "true" or "false"
+        Decimal64,          // 64-bit signed decimal number
+        Empty,              // A leaf that does not have any value
+        Enumeration,        // Enumerated Strings
+        IdentityRef,        // A reference to an abstract identity
+        InstanceIdentifier, // References a data tree node
+        Int8,               // 8-bit signed integer
+        Int16,              // 16-bit signed integer
+        Int32,              // 32-bit signed integer
+        Int64,              // 64-bit signed integer
+        LeafRef,            // A reference to a leaf instance
+        String,             // Human Readable string
+        UInt8,              // 8-Bit unsigned Integer
+        UInt16,             // 16-bit unsigned Integer
+        UInt32,             // 32-bit unsigned Integer
+        UInt64,             // 64-bit unsigned Integer
+        Union               // choice of member types
+    }
 
-#[derive(Debug, PartialEq, Eq, Hash)]
-pub enum BuiltInType {
-    Binary,             // Any binary data
-    Bits,               // A set of bits or flags
-    Boolean,            // "true" or "false"
-    Decimal64,          // 64-bit signed decimal number
-    Empty,              // A leaf that does not have any value
-    Enumeration,        // Enumerated Strings
-    IdentityRef,        // A reference to an abstract identity
-    InstanceIdentifier, // References a data tree node
-    Int8,               // 8-bit signed integer
-    Int16,              // 16-bit signed integer
-    Int32,              // 32-bit signed integer
-    Int64,              // 64-bit signed integer
-    LeafRef,            // A reference to a leaf instance
-    String,             // Human Readable string
-    UInt8,              // 8-Bit unsigned Integer
-    UInt16,             // 16-bit unsigned Integer
-    UInt32,             // 32-bit unsigned Integer
-    UInt64,             // 64-bit unsigned Integer
-    Union               // choice of member types
+    /// gives us a mapping between the types in BuiltInTypeEnum 
+    /// and the actual string of the type used in the YANG.
+    pub fn type_mapping<'a>() -> HashMap<Type, &'a str> 
+    {
+        HashMap::from([
+            (Type::Binary, "binary"),
+            (Type::Bits, "bits"),
+            (Type::Boolean, "boolean"),
+            (Type::Decimal64, "decimal64"),
+            (Type::Empty, "empty"),
+            (Type::Enumeration, "enumeration"),
+            (Type::IdentityRef, "identityref"),
+            (Type::InstanceIdentifier, "instance-identifier"),
+            (Type::Int8, "int8"),
+            (Type::Int16, "int16"),
+            (Type::Int32, "int32"),
+            (Type::Int64, "int64"),
+            (Type::LeafRef, "leafref"),
+            (Type::String, "string"),
+            (Type::UInt8, "uint8"),
+            (Type::UInt16, "uint16"),
+            (Type::UInt32, "uint32"),
+            (Type::UInt64, "uint64"),
+            (Type::Union, "union")
+        ])
+    }
+    
 }
 
-#[derive(Debug, PartialEq, Eq, Hash)]
-pub enum NodeType 
-{
-    LeafNode,
-    LeafListNode,
-    ContainerNode,
-    ListNode,
-    ModuleNode
+pub (crate) mod node {
+    use std::collections::HashMap;
+    
+    #[derive(Debug, PartialEq, Eq, Hash)]
+    pub enum Type 
+    {
+        LeafNode,
+        LeafListNode,
+        ContainerNode,
+        ListNode,
+        ModuleNode
+    }   
+
+    pub fn type_mapping<'a>() -> HashMap<Type, &'a str>
+    {
+        HashMap::from([
+            (Type::LeafNode, "leaf"),
+            (Type::LeafListNode, "leaf-list"),
+            (Type::ContainerNode, "container"),
+            (Type::ModuleNode, "module"),
+            (Type::ListNode, "list")
+        ])
+    }
+
+
+
+    pub fn serde_mapping<'a>() -> HashMap<Type, &'a str>
+    {
+        HashMap::from([
+            (Type::LeafNode, "leaf--"),
+            (Type::LeafListNode, "leaf-list--"),
+            (Type::ContainerNode, "container--"),
+            (Type::ModuleNode, "module--"),
+            (Type::ListNode, "list--")
+        ])
+    }
 }
 
-pub fn built_in_type_mapping<'a>() -> HashMap<BuiltInType, &'a str> 
-{
-    HashMap::from([
-        (BuiltInType::Binary, "binary"),
-        (BuiltInType::Bits, "bits"),
-        (BuiltInType::Boolean, "boolean"),
-        (BuiltInType::Decimal64, "decimal64"),
-        (BuiltInType::Empty, "empty"),
-        (BuiltInType::Enumeration, "enumeration"),
-        (BuiltInType::IdentityRef, "identityref"),
-        (BuiltInType::InstanceIdentifier, "instance-identifier"),
-        (BuiltInType::Int8, "int8"),
-        (BuiltInType::Int16, "int16"),
-        (BuiltInType::Int32, "int32"),
-        (BuiltInType::Int64, "int64"),
-        (BuiltInType::LeafRef, "leafref"),
-        (BuiltInType::String, "string"),
-        (BuiltInType::UInt8, "uint8"),
-        (BuiltInType::UInt16, "uint16"),
-        (BuiltInType::UInt32, "uint32"),
-        (BuiltInType::UInt64, "uint64"),
-        (BuiltInType::Union, "union")
-    ])
-}
- 
 
-pub fn node_type_mapping<'a>() -> HashMap<NodeType, &'a str>
-{
-    HashMap::from([
-        (NodeType::LeafNode, "leaf"),
-        (NodeType::LeafListNode, "leaf-list"),
-        (NodeType::ContainerNode, "container"),
-        (NodeType::ModuleNode, "module"),
-        (NodeType::ListNode, "list")
-    ])
+pub fn get_built_in_type_str<'a>(built_in_type: built_in::Type) -> &'a str{
+    built_in::type_mapping()[&built_in_type]
 }
-
-pub fn node_serde_mapping<'a>() -> HashMap<NodeType, &'a str>
-{
-    HashMap::from([
-        (NodeType::LeafNode, "leaf--"),
-        (NodeType::LeafListNode, "leaf-list--"),
-        (NodeType::ContainerNode, "container--"),
-        (NodeType::ModuleNode, "module--"),
-        (NodeType::ListNode, "list--")
-    ])
-}
-
-pub fn get_built_in_type_str<'a>(built_in: BuiltInType) -> &'a str{
-    built_in_type_mapping()[&built_in]
-}
-
