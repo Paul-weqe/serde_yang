@@ -1,7 +1,5 @@
-/// 
-/// 
-/// 
 pub mod built_in {
+    
     use std::collections::HashMap;
 
     /// These are the default built in types that are supported by YANG modelling 
@@ -32,6 +30,16 @@ pub mod built_in {
 
     /// gives us a mapping between the types in BuiltInTypeEnum 
     /// and the actual string of the type used in the YANG.
+    /// 
+    /// e.g 
+    /// 
+    /// ```
+    /// use serde_yang::ser::types::built_in::Type;
+    /// use serde_yang::ser::types::built_in::type_mapping;
+    /// 
+    /// println!("{}", type_mapping()[&Type::Empty]);
+    /// // This will print out "empty"
+    /// ```
     pub fn type_mapping<'a>() -> HashMap<Type, &'a str> 
     {
         HashMap::from([
@@ -59,6 +67,7 @@ pub mod built_in {
     
 }
 
+
 pub (crate) mod node {
     use std::collections::HashMap;
     
@@ -72,6 +81,10 @@ pub (crate) mod node {
         ModuleNode
     }   
 
+    /// Most of the following has been picked from the YANG IETF
+    /// https://datatracker.ietf.org/doc/html/rfc6020
+    /// 
+    /// 
     pub fn type_mapping<'a>() -> HashMap<Type, &'a str>
     {
         HashMap::from([
@@ -98,6 +111,3 @@ pub (crate) mod node {
 }
 
 
-pub fn get_built_in_type_str<'a>(built_in_type: built_in::Type) -> &'a str{
-    built_in::type_mapping()[&built_in_type]
-}

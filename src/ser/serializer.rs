@@ -8,8 +8,7 @@ use super::{
     plain::to_plain_string,
     types::{
         self,
-        node, 
-        built_in
+        node
     },
     builder::{
         leaf_node_builder, 
@@ -323,13 +322,12 @@ impl<'a> ser::SerializeStruct for &'a mut Serializer {
         if value_type == "alloc::string::String" {
             let v = to_plain_string(value).unwrap(); 
             
-
             if String::from(key).as_str() == "type--" {
                 
                 let valid_types = types::built_in::type_mapping().into_values().collect::<Vec<&str>>();
                 // check if is valid type
                 if valid_types.iter().any(|&i| i == v.as_str()) {
-                    self.output += leaf_node_builder::add_type( v.as_str() ).as_str();
+                    self.output += leaf_node_builder::set_type( v.as_str() ).as_str();
                 } else {
                     panic!("INVALID YANG TYPE: {}", v.as_str());
                 }
