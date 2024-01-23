@@ -1,4 +1,6 @@
 
+![crates.io](https://img.shields.io/crates/v/serde_yang.svg)
+
 **FURTHER CHANGES WILL BE UPDATED**
 <p style="color: red;">Current changes are being made for the serializer, work on the deserializer is still in TODO</p>
 
@@ -6,7 +8,7 @@
 
 Serde is a rust library used for <u>ser</u>ialization and <u>de</u>serialization. serde YANG is used for serialization/deserialization of the YANG modelling language.
 
-```toml
+```
 [dependencies]
 serde_yang = "0.1.0"
 ```
