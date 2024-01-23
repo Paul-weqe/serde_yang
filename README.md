@@ -1,5 +1,5 @@
 
-![crates.io](https://img.shields.io/crates/v/serde_yang.svg)
+[![crates.io](https://img.shields.io/crates/v/serde_yang.svg)](https://crates.io/crates/serde_yang)
 
 **FURTHER CHANGES WILL BE UPDATED**
 <p style="color: red;">Current changes are being made for the serializer, work on the deserializer is still in TODO</p>
